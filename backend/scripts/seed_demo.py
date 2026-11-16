@@ -32,6 +32,13 @@ def seed():
             db.add(r);db.flush();deliver(db,r)
             db.add(Audit(actor='seed',action='demo.baseline',detail={'dataset':d.id},at=time.time()))
         db.commit()
+    try:
+        from scripts.seed_accounting import seed_accounting
+        seed_accounting()
+    except Exception:
+        import logging
+        logging.exception('Accounting demo seed failed; core demo remains available')
+    with Session() as db:
         counts={model.__tablename__:db.scalar(select(func.count()).select_from(model)) for model in [User,Dataset,Job,Report,Delivery,Audit]}
         print(json.dumps(counts,ensure_ascii=False))
         return counts
